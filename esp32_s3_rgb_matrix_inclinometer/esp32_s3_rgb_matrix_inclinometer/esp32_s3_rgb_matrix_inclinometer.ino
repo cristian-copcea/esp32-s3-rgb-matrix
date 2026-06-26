@@ -26,8 +26,8 @@ const float MOTION_THRESHOLD = 35.0;
 const unsigned long SCROLL_SPEED_MS = 160;       
 
 // --- ACCUMULATIVE SHAKE DETECTION CONFIGURATION ---
-const float SHAKE_G_THRESHOLD = 800.0;        
-const unsigned long REQUIRED_SHAKE_DURATION_MS = 500; 
+const float SHAKE_G_THRESHOLD = 600.0;        
+const unsigned long REQUIRED_SHAKE_DURATION_MS = 300; 
 
 // State machine trackers
 unsigned long lastBlinkTime = 0; 
@@ -268,9 +268,24 @@ void loop() {
 
       if (abs(ax) > abs(ay)) { boardOrientation = (ax > 0) ? 2 : 0; } else { boardOrientation = (ay > 0) ? 3 : 1; }
       float pitch = atan2(-ay, sqrt(ax * ax + az * az)) * 57.2958; float roll = atan2(ax, sqrt(ay * ay + az * az)) * 57.2958;
-
-      float targetTrackAngle = (activeOperationMode == 0) ? max(abs(pitch), abs(roll)) : abs(abs(pitch) > abs(roll) ? abs(pitch) - 90.0f : abs(roll) - 90.0f);
-      float tiltRatio = constrain(targetTrackAngle / MAX_ANGLE_THRESHOLD, 0.0f, 1.0f);
+      float targetTrackAngle=0.0f;
+      float tiltRatio=0.0f;
+      switch (activeOperationMode) {
+        case 0: targetTrackAngle = max(abs(pitch), abs(roll)); break;
+        case 1: 
+          switch (boardOrientation) {
+            case 0:targetTrackAngle=abs(pitch); break; //bottom
+            case 1:targetTrackAngle=abs(roll); break;  //left
+            case 2:targetTrackAngle=abs(pitch); break; //top
+            case 3:targetTrackAngle=abs(roll); break;   //right
+            default: break;
+          }
+          break;
+          default: break;
+      }
+      tiltRatio = constrain(targetTrackAngle / MAX_ANGLE_THRESHOLD, 0.0f, 1.0f);
+      // float targetTrackAngle = (activeOperationMode == 0) ? max(abs(pitch), abs(roll)) : abs(abs(pitch) > abs(roll) ? abs(pitch) - 90.0f : abs(roll) - 90.0f);
+      // float tiltRatio = constrain(targetTrackAngle / MAX_ANGLE_THRESHOLD, 0.0f, 1.0f);
       uint32_t liveColor = matrix.Color(0, 0, 0);
 
       if (targetTrackAngle <= LEVEL_DEADZONE) {
@@ -301,9 +316,17 @@ void loop() {
         
           // FIX: Check the active operation mode immediately on the first pass
           if (activeOperationMode == 1) {
-          // If in Verticality mode, start with V immediately
-            marqueeText = "  V:" + String((abs(pitch) > abs(roll)) ? abs(pitch) : abs(roll), 2) + "* ";
-          } else {
+        // If in Verticality mode, start with V immediately
+          // marqueeText = "  V:" + String((abs(pitch) > abs(roll)) ? abs(pitch) : abs(roll), 2) + "* ";
+            switch (boardOrientation) {
+              case 0:marqueeText = "  V:" + String(abs(pitch),2) + "* "; scrollX = 8; break; //bottom side
+              case 1:marqueeText = "  V:" + String(abs(roll),2)  + "* "; scrollX = 8; break; //left side
+              case 2:marqueeText = "  V:" + String(abs(pitch),2) + "* "; scrollX = 8; break; //top
+              case 3:marqueeText = "  V:" + String(abs(roll),2)  + "* "; scrollX = 8; break; //right side
+              default: break;
+            }
+          }
+          else {
             // If in Planarity mode, start with X=
             marqueeText = "  X=" + String(pitch, 2) + "* "; 
           }
@@ -312,7 +335,23 @@ void loop() {
         if (currentTime - lastScrollTime >= SCROLL_SPEED_MS) {
           lastScrollTime = currentTime; scrollX--; int textLengthPixels = marqueeText.length() * 4; 
           if (scrollX < -textLengthPixels) {
-            if (activeOperationMode == 1) { marqueeText = "  V:" + String((abs(pitch) > abs(roll)) ? abs(pitch) : abs(roll), 2) + "* "; scrollX = 8; } 
+            // if (activeOperationMode == 1) { 
+            //   if (boardOrientation==0) {
+            //     marqueeText = "  V:" + String(abs(pitch), 2) + "* "; 
+            //     scrollX = 8; 
+            //   }
+            // } 
+            if (activeOperationMode == 1) {
+          // If in Verticality mode, start with V immediately
+            // marqueeText = "  V:" + String((abs(pitch) > abs(roll)) ? abs(pitch) : abs(roll), 2) + "* ";
+              switch (boardOrientation) {
+                case 0:marqueeText = "  V:" + String(abs(pitch),2) + "* "; scrollX = 8; break; //bottom side
+                case 1:marqueeText = "  V:" + String(abs(roll),2)  + "* "; scrollX = 8; break; //left side
+                case 2:marqueeText = "  V:" + String(abs(pitch),2) + "* "; scrollX = 8; break; //top
+                case 3:marqueeText = "  V:" + String(abs(roll),2)  + "* "; scrollX = 8; break; //right side
+                default: break;
+              }
+            }
             else {
               currentMarqueeSegment = (currentMarqueeSegment == 0) ? 1 : 0;
               marqueeText = (currentMarqueeSegment == 1) ? "  Y:" + String(roll, 2) + "* " : "  X:" + String(pitch, 2) + "* ";
