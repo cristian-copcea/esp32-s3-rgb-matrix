@@ -212,7 +212,20 @@ void loop() {
       }
       else if (currentTime - lastMotionTime > STILLNESS_TIMEOUT_MS) {
         // MODE B: Stillness Triggered Marquee Mode
-        if (!isShowingTextMode) { isShowingTextMode = true; currentMarqueeSegment = 0; marqueeText = "  X:" + String(pitch, 2) + "* "; scrollX = 8; }
+        if (!isShowingTextMode) { 
+        isShowingTextMode = true; 
+        currentMarqueeSegment = 0; 
+        
+          // FIX: Check the active operation mode immediately on the first pass
+          if (activeOperationMode == 1) {
+          // If in Verticality mode, start with V immediately
+            marqueeText = "  V:" + String((abs(pitch) > abs(roll)) ? abs(pitch) : abs(roll), 2) + "* ";
+          } else {
+            // If in Planarity mode, start with X=
+            marqueeText = "  X=" + String(pitch, 2) + "* "; 
+          }
+          scrollX = 8; 
+        }
         if (currentTime - lastScrollTime >= SCROLL_SPEED_MS) {
           lastScrollTime = currentTime; scrollX--; int textLengthPixels = marqueeText.length() * 4; 
           if (scrollX < -textLengthPixels) {
@@ -227,9 +240,7 @@ void loop() {
         matrix.clear(); bool shouldRotateY = (activeOperationMode == 0 && currentMarqueeSegment == 1); int currentX = scrollX;
         for (int i = 0; i < marqueeText.length(); i++) { drawCharRotated(marqueeText[i], currentX, 2, liveColor, shouldRotateY); currentX += 4; }
         
-        // Keep the Violet Geiger tracking light alive during text scrolls
-        matrix.setPixelColor(7, isGeigerOn ? matrix.Color(0, 130, 180) : matrix.Color(0, 0, 0));
-        matrix.show();
+
       } else {
         // MODE A: Realtime Crosshair / Alignment Bar Mode
         matrix.clear();
@@ -254,16 +265,20 @@ void loop() {
             if (pI != -1) matrix.setPixelColor(pI, liveColor);
           }
         }
-
-        unsigned long geigerInterval = (unsigned long)(tiltRatio * 600.0f);
-        if (targetTrackAngle <= LEVEL_DEADZONE) { isGeigerOn = true; } 
-        else {
-          if (geigerInterval < 60) geigerInterval = 60;
-          if (currentTime - lastGeigerBlinkTime >= geigerInterval) { isGeigerOn = !isGeigerOn; lastGeigerBlinkTime = currentTime; }
-        }
-        matrix.setPixelColor(7, isGeigerOn ? matrix.Color(0, 130, 180) : matrix.Color(0, 0, 0));
-        matrix.show();
       }
+      // --- FIX: VISUAL GEIGER-COUNTER PULSE ENGINE (GLOBAL OUTSIDE EXECUTION LAYER) ---
+      // Moved completely outside the Mode conditionals so it executes during marquees too!
+      unsigned long geigerInterval = (unsigned long)(tiltRatio * 600.0f);
+      if (targetTrackAngle <= LEVEL_DEADZONE) { isGeigerOn = true; } 
+      else {
+        if (geigerInterval < 60) geigerInterval = 60;
+        if (currentTime - lastGeigerBlinkTime >= geigerInterval) { isGeigerOn = !isGeigerOn; lastGeigerBlinkTime = currentTime; }
+      }
+      
+      // Inject Violet indicator light onto physical pixel slot 7 right before committing the canvas frame
+      matrix.setPixelColor(7, isGeigerOn ? matrix.Color(0, 130, 180) : matrix.Color(0, 0, 0));
+      matrix.show();
+      
     }
   }
   
