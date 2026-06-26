@@ -55,7 +55,7 @@ unsigned long lastGeigerBlinkTime = 0;
 bool isGeigerOn = true;
 
 // Custom 3x5 font allocation array
-uint16_t font3x5[19]; 
+uint16_t font3x5[35]; 
 void initializeFont() {
   auto packG = [](int r0_0, int r0_1, int r0_2,
                   int r1_0, int r1_1, int r1_2,
@@ -88,14 +88,52 @@ void initializeFont() {
   font3x5[15] = packG(1,0,1, 1,0,1, 0,1,0, 0,1,0, 0,1,0); // 15: Y
   font3x5[16] = packG(0,0,0, 0,1,0, 0,0,0, 0,1,0, 0,0,0); // 16: :
   font3x5[17] = packG(0,0,0, 0,1,0, 0,0,0, 0,1,0, 1,0,0); // 17: ; 
-  font3x5[18] = packG(1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0); // 18: V 
+  font3x5[18] = packG(1,1,1, 1,0,1, 1,1,1, 1,0,0, 1,0,0); // 18: P
+  font3x5[19] = packG(1,1,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1); // 18: O
+  font3x5[20] = packG(1,0,0, 1,0,0, 1,0,0, 1,0,0, 1,1,1); // 18: L
+  font3x5[21] = packG(1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,1,0); // 18: B
+  font3x5[22] = packG(1,1,1, 1,0,0, 1,0,0, 1,0,0, 1,1,1); // 18: C
+  font3x5[23] = packG(1,1,0, 1,0,1, 1,0,1, 1,0,1, 1,1,0); // 18: D 
+  font3x5[24] = packG(0,1,0, 0,1,0, 0,1,0, 0,1,0, 0,1,0); // 18: I
+  font3x5[25] = packG(1,1,1, 1,0,0, 1,0,0, 1,0,1, 1,1,1); // 18: G
+  font3x5[26] = packG(1,1,1, 0,1,0, 0,1,0, 0,1,0, 0,1,0); // 18: T
+  font3x5[27] = packG(1,1,1, 1,0,1, 1,1,1, 1,0,1, 1,0,1); // 18: A
+  font3x5[28] = packG(1,0,1, 1,1,1, 1,0,1, 1,0,1, 1,0,1); // 18: M
+  font3x5[29] = packG(1,1,1, 1,0,0, 1,1,1, 1,0,0, 1,1,1); // 18: E
+  font3x5[30] = packG(1,1,1, 1,0,0, 1,1,1, 1,0,0, 1,0,0); // 18: F
+  font3x5[31] = packG(1,0,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1); // 18: U
+  font3x5[32] = packG(1,0,1, 1,1,1, 1,0,1, 1,0,1, 1,0,1); // 18: N
+  font3x5[33] = packG(1,1,1, 1,0,1, 1,1,0, 1,0,1, 1,0,1); // 18: R
+  font3x5[34] = packG(1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0); // 18: V
 }
 
 int getCharIndex(char c) {
   if (c >= '0' && c <= '9') return c - '0';
-  if (c == ' ') return 10; if (c == '.') return 11; if (c == '-') return 12; if (c == '*') return 13; 
-  if (c == 'X' || c == 'x') return 14; if (c == 'Y' || c == 'y') return 15;
-  if (c == ':') return 16; if (c == ';') return 17; if (c == 'V' || c == 'v') return 18;
+  if (c == ' ') return 10; 
+  if (c == '.') return 11; 
+  if (c == '-') return 12; 
+  if (c == '*') return 13; 
+  if (c == 'X' || c == 'x') return 14; 
+  if (c == 'Y' || c == 'y') return 15;
+  if (c == ':') return 16; 
+  if (c == ';') return 17; 
+  if (c == 'p' || c == 'P') return 18;
+  if (c == 'o' || c == 'O') return 19;
+  if (c == 'l' || c == 'L') return 20;
+  if (c == 'b' || c == 'B') return 21;
+  if (c == 'c' || c == 'C') return 22;
+  if (c == 'd' || c == 'D') return 23;
+  if (c == 'i' || c == 'I') return 24;
+  if (c == 'g' || c == 'G') return 25;
+  if (c == 't' || c == 'T') return 26;
+  if (c == 'a' || c == 'A') return 27;
+  if (c == 'm' || c == 'M') return 28;
+  if (c == 'e' || c == 'E') return 29;
+  if (c == 'f' || c == 'F') return 30; 
+  if (c == 'u' || c == 'U') return 31;
+  if (c == 'n' || c == 'N') return 32;
+  if (c == 'r' || c == 'R') return 33;
+  if (c == 'v' || c == 'V') return 34;
   return 10; 
 }
 void drawCharRotated(char c, int xOffset, int yOffset, uint32_t color, bool rotateYAxis) {
@@ -126,6 +164,40 @@ int getPixelIndex(int x, int y) {
   return (y * 8) + x;
 }
 
+void displaytext(String text, int loops, int R, int G, int B) {
+
+    // ---  STARTUP TEXT MARQUEE LAYER ---
+  String bootText = text;
+  int bootScrollX = 8;
+  int textWidth = bootText.length() * 4;
+  int totalLoops = loops; // Number of times to scroll the phrase
+  
+  while (totalLoops > 0) {
+    matrix.clear();
+    int currentX = bootScrollX;
+    
+    // Render text string onto canvas
+    for (int i = 0; i < bootText.length(); i++) {
+      drawCharRotated(bootText[i], currentX, 2, matrix.Color(R, G, B), false); 
+      currentX += 4;
+    }
+    
+    matrix.show();
+    delay(50); // Controls the scrolling speed at boot
+    bootScrollX--;
+    
+    // Reset string position for next loop round
+    if (bootScrollX < -textWidth) {
+      bootScrollX = 8;
+      totalLoops--;
+    }
+  }
+  
+  // Clear display so it is fresh for the main application loops
+  matrix.clear();
+  matrix.show();
+
+}
 void setup() {
   Serial.begin(115200); delay(500); 
   matrix.begin(); matrix.setBrightness(30); matrix.fill(matrix.Color(0, 0, 150)); matrix.show(); delay(300);
@@ -140,6 +212,9 @@ void setup() {
   imu.setAccelUnit_mg(true); imu.setGyroUnit_dps(true);   
   imu.setAccelRange(QMI8658_ACCEL_RANGE_4G); imu.setAccelODR(QMI8658_ACCEL_ODR_125HZ);
   randomSeed(micros()); lastMotionTime = millis();
+
+    // ---  STARTUP TEXT MARQUEE LAYER ---
+  displaytext("  Poloboc digital 2026 ",1,0,0,200);
 }
 
 int currentMarqueeSegment = 0; int continuousShakeFrames = 0;
@@ -167,7 +242,15 @@ void loop() {
           wasShakingLastFrame = false; continuousShakeFrames = 0; shakeStartTime = currentTime; 
           lastMotionTime = currentTime; isShowingTextMode = false; currentMarqueeSegment = 0;
           matrix.clear(); uint32_t flashCol = (activeOperationMode == 0) ? matrix.Color(0, 0, 150) : matrix.Color(100, 0, 100);
-          matrix.fill(flashCol); matrix.show(); delay(200); matrix.clear(); matrix.show(); return; 
+          matrix.fill(flashCol); matrix.show(); delay(200); matrix.clear(); matrix.show(); 
+          
+          boardOrientation=0;
+          switch (activeOperationMode) {
+            case 0: displaytext("  Mod de functionare: Clinometru ",1,100,100,200); break;
+            case 1: displaytext("  Mod de functionare: Nivela ",1,100,100,200); break;
+            default:  break;
+          }
+        return; 
         }
       } else {
         if (currentTime - shakeStartTime > 150) { wasShakingLastFrame = false; continuousShakeFrames = 0; }
