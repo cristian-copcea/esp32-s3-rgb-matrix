@@ -241,13 +241,19 @@ void loop() {
           activeOperationMode = (activeOperationMode == 0) ? 1 : 0; 
           wasShakingLastFrame = false; continuousShakeFrames = 0; shakeStartTime = currentTime; 
           lastMotionTime = currentTime; isShowingTextMode = false; currentMarqueeSegment = 0;
-          matrix.clear(); uint32_t flashCol = (activeOperationMode == 0) ? matrix.Color(0, 0, 150) : matrix.Color(100, 0, 100);
-          matrix.fill(flashCol); matrix.show(); delay(200); matrix.clear(); matrix.show(); 
-          
+          matrix.clear(); uint32_t flashCol = (activeOperationMode == 0) ? matrix.Color(0, 255, 0) : matrix.Color(255, 0, 0);
+          matrix.fill(flashCol); matrix.show(); delay(100); matrix.clear();  matrix.show(); delay(100);
+          matrix.fill(flashCol); matrix.show(); delay(100); matrix.clear();  matrix.show(); delay(100);
+          matrix.fill(flashCol); matrix.show(); delay(100); matrix.clear();  matrix.show(); delay(100);
+          matrix.fill(flashCol); matrix.show(); delay(100); matrix.clear();  matrix.show(); delay(100);
+          matrix.fill(flashCol); matrix.show(); delay(100); matrix.clear();  matrix.show(); delay(100);
+
           boardOrientation=0;
           switch (activeOperationMode) {
-            case 0: displaytext("  Mod de functionare: Clinometru ",1,100,100,200); break;
-            case 1: displaytext("  Mod de functionare: Nivela ",1,100,100,200); break;
+            // case 0: displaytext("  Mod de functionare: Clinometru ",1,100,100,200); break;
+            // case 1: displaytext("  Mod de functionare: Nivela ",1,100,100,200); break;
+            case 0: displaytext("  Clinometru ",1,100,100,200); break;
+            case 1: displaytext("  Nivela ",1,100,100,200); break;
             default:  break;
           }
         return; 
@@ -396,10 +402,26 @@ void loop() {
         if (geigerInterval < 60) geigerInterval = 60;
         if (currentTime - lastGeigerBlinkTime >= geigerInterval) { isGeigerOn = !isGeigerOn; lastGeigerBlinkTime = currentTime; }
       }
-      
-      // Inject Violet indicator light onto physical pixel slot 7 right before committing the canvas frame
-      matrix.setPixelColor(7, isGeigerOn ? matrix.Color(0, 130, 180) : matrix.Color(0, 0, 0));
-      matrix.show();
+      if (activeOperationMode==0) {
+        // Inject Violet indicator light onto physical pixel slot 7 right before committing the canvas frame
+        matrix.setPixelColor(7, isGeigerOn ? matrix.Color(0, 130, 180) : matrix.Color(0, 0, 0));
+        matrix.show();
+      }
+      else {
+        int BOPixel1 = 0;
+        int BOPixel2 = 0;
+        switch (boardOrientation) {
+        case 0: BOPixel1=59; BOPixel2=60; break; //bottom side
+        case 1: BOPixel1=24; BOPixel2=32; break; //left side
+        case 2: BOPixel1=3;  BOPixel2=4;  break; //top
+        case 3: BOPixel1=39; BOPixel2=31; break; //right side
+        default: break;
+        } 
+        matrix.setPixelColor(BOPixel1, isGeigerOn ? matrix.Color(0, 130, 180) : matrix.Color(0, 0, 0));
+        matrix.setPixelColor(BOPixel2, isGeigerOn ? matrix.Color(0, 130, 180) : matrix.Color(0, 0, 0));
+        matrix.show();
+      }
+
       
     }
   }
